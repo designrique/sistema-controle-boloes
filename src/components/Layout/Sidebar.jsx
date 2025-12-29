@@ -1,7 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { getInitials } from '../../utils/formatters'
 
 const Sidebar = () => {
   const location = useLocation()
+  const { usuario, isAdmin, logout } = useAuth()
 
   const menuItems = [
     {
@@ -18,6 +21,24 @@ const Sidebar = () => {
       ],
     },
   ]
+
+  // Adicionar menu de usuários apenas para admin
+  if (isAdmin) {
+    menuItems.push({
+      section: 'Administração',
+      items: [
+        { path: '/usuarios', label: 'Usuários', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+      ],
+    })
+  }
+
+  const handleLogout = () => {
+    logout()
+    window.location.href = '/login'
+  }
+
+  const userInitials = getInitials(usuario?.nome)
+  const userRole = usuario?.role === 'admin' ? 'Administrador' : usuario?.role === 'gerente' ? 'Gerente' : 'Vendedor'
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r">
@@ -78,13 +99,22 @@ const Sidebar = () => {
       <div className="p-4 border-t">
         <div className="flex items-center space-x-3 px-3 py-2">
           <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">A</span>
+            <span className="text-white text-sm font-medium">{userInitials || 'U'}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">Admin</p>
-            <p className="text-xs text-gray-500 truncate">admin@loteria.com</p>
+            <p className="text-sm font-medium text-gray-900 truncate">{usuario?.nome || 'Usuário'}</p>
+            <p className="text-xs text-gray-500 truncate">{userRole}</p>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="w-full mt-2 flex items-center justify-center px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sair
+        </button>
       </div>
     </aside>
   )
